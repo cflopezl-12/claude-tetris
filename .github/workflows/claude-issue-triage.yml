@@ -46,6 +46,7 @@ jobs:
                - "question" (#d876e3) — needs clarification
 
             3. Post a diagnostic comment on the issue using `gh issue comment ${{ github.event.issue.number }} --body "<comment>"`.
+               The comment must be written in valid GitHub Flavored Markdown (GFM) so it renders correctly on GitHub — use headers (##), bold (**text**), bullet lists (- item), and inline code (`code`) where appropriate.
                The comment must include:
                - **Diagnosis**: What is the root cause or area of concern based on the codebase?
                - **Affected code**: Which functions/lines in game.js (or other files) are relevant?
