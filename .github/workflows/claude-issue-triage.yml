@@ -1,0 +1,55 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowed-tools Bash(gh issue edit *),Bash(gh issue comment *),Bash(gh label create *),Read'
+          prompt: |
+            Analyze GitHub issue #${{ github.event.issue.number }} for this Tetris game repository.
+
+            Issue title: ${{ github.event.issue.title }}
+            Issue body:
+            ${{ github.event.issue.body }}
+
+            Follow these steps:
+
+            1. Read the codebase: game.js, index.html, style.css to understand the current implementation.
+
+            2. Classify the issue and apply ONE OR MORE labels using `gh issue edit ${{ github.event.issue.number }} --add-label "<label>"`.
+               Create the label first if it doesn't exist with `gh label create "<label>" --color "<hex>" --repo ${{ github.repository }}`.
+               Use these labels:
+               - "bug" (#d73a4a) — something broken or incorrect
+               - "enhancement" (#a2eeef) — improvement to existing feature
+               - "feature" (#0075ca) — new functionality
+               - "gameplay" (#e4e669) — relates to game mechanics, scoring, speed, pieces
+               - "ui" (#f9d0c4) — visual, styling, canvas, layout
+               - "performance" (#cfd3d7) — rendering, animation, frame rate
+               - "question" (#d876e3) — needs clarification
+
+            3. Post a diagnostic comment on the issue using `gh issue comment ${{ github.event.issue.number }} --body "<comment>"`.
+               The comment must include:
+               - **Diagnosis**: What is the root cause or area of concern based on the codebase?
+               - **Affected code**: Which functions/lines in game.js (or other files) are relevant?
+               - **Suggested approach**: A brief implementation strategy (no code needed, just direction).
+               - **Complexity**: Low / Medium / High — with one-line justification.
+
+            Be concise. Write the comment in the same language as the issue.
